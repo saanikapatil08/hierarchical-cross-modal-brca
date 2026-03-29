@@ -198,13 +198,3 @@ training:
 
 ---
 
-## Citation
-
-```bibtex
-@mastersthesis{patil2025hcmt,
-  title  = {Hierarchical Cross-Modal Transformer Fusion for Breast Cancer PAM50 Subtype Classification},
-  author = {Patil, Saanika},
-  year   = {2025},
-  school = {[Your University]}
-}
-```
