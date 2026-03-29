@@ -1,7 +1,7 @@
 # HCMT — Hierarchical Cross-Modal Transformer
 ## Breast Cancer PAM50 Subtype Classification via Multi-Modal Fusion
 
-> Masters Research Project | Multi-Modal Medical AI | TCGA-BRCA | PyTorch
+> Research Project | Multi-Modal Medical AI | TCGA-BRCA | PyTorch
 
 ---
 
