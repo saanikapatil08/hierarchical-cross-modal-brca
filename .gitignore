@@ -1,0 +1,26 @@
+# Data files
+data/
+*.pt
+*.zip
+*.tar.gz
+*.tsv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Misc
+.DS_Store
+.Rhistory
+wandb/
+logs/
+outputs/
+checkpoints/
+{src/
+
+# Notebooks output
+.ipynb_checkpoints/

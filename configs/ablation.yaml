@@ -1,0 +1,107 @@
+# =============================================================================
+# Ablation Study Configurations
+# =============================================================================
+# Run ablations to isolate the contribution of each component.
+#
+# Usage:
+#   # No cross-modal attention
+#   python scripts/train.py --config configs/default.yaml \
+#       ablation.disable_cross_modal_attn=true \
+#       experiment.name=ablation_no_cross_attn
+#
+#   # No gated fusion (equal weights)
+#   python scripts/train.py --config configs/default.yaml \
+#       ablation.disable_gated_fusion=true \
+#       experiment.name=ablation_no_gate
+#
+#   # WSI only
+#   python scripts/train.py --config configs/default.yaml \
+#       data.use_genomics=false data.use_radiology=false data.use_clinical=false \
+#       experiment.name=baseline_wsi_only
+#
+#   # Genomics only
+#   python scripts/train.py --config configs/default.yaml \
+#       data.use_wsi=false data.use_radiology=false data.use_clinical=false \
+#       experiment.name=baseline_genomics_only
+# =============================================================================
+
+# Suggested ablation experiments:
+ablation_experiments:
+  - name: "full_model"
+    description: "All 4 modalities + full architecture (main result)"
+    overrides: {}
+
+  - name: "no_cross_modal_attn"
+    description: "Remove cross-modal attention (intra-modal only)"
+    overrides:
+      ablation.disable_cross_modal_attn: true
+
+  - name: "no_gated_fusion"
+    description: "Replace gated fusion with equal-weight mean pooling"
+    overrides:
+      ablation.disable_gated_fusion: true
+
+  - name: "no_cross_no_gate"
+    description: "No cross-modal attention and no gated fusion"
+    overrides:
+      ablation.disable_cross_modal_attn: true
+      ablation.disable_gated_fusion: true
+
+  - name: "wsi_only"
+    description: "Unimodal — WSI features only"
+    overrides:
+      data.use_genomics: false
+      data.use_radiology: false
+      data.use_clinical: false
+
+  - name: "genomics_only"
+    description: "Unimodal — RNA-seq only"
+    overrides:
+      data.use_wsi: false
+      data.use_radiology: false
+      data.use_clinical: false
+
+  - name: "radiology_only"
+    description: "Unimodal — MRI only"
+    overrides:
+      data.use_wsi: false
+      data.use_genomics: false
+      data.use_clinical: false
+
+  - name: "clinical_only"
+    description: "Unimodal — clinical features only"
+    overrides:
+      data.use_wsi: false
+      data.use_genomics: false
+      data.use_radiology: false
+
+  - name: "wsi_genomics"
+    description: "Bimodal — WSI + Genomics (most common pair in literature)"
+    overrides:
+      data.use_radiology: false
+      data.use_clinical: false
+
+  - name: "wsi_genomics_clinical"
+    description: "Trimodal — no radiology"
+    overrides:
+      data.use_radiology: false
+
+  - name: "d_model_128"
+    description: "Smaller model capacity"
+    overrides:
+      model.d_model: 128
+
+  - name: "d_model_512"
+    description: "Larger model capacity"
+    overrides:
+      model.d_model: 512
+
+  - name: "n_fusion_layers_1"
+    description: "Shallower fusion (1 block)"
+    overrides:
+      model.cross_modal.n_layers: 1
+
+  - name: "n_fusion_layers_3"
+    description: "Deeper fusion (3 blocks)"
+    overrides:
+      model.cross_modal.n_layers: 3

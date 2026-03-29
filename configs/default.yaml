@@ -1,0 +1,130 @@
+# =============================================================================
+# HCMT Default Configuration
+# =============================================================================
+# All hyperparameters for training, model architecture, and data loading.
+# Override specific values via CLI: python scripts/train.py model.d_model=512
+
+# ─── Experiment ───────────────────────────────────────────────────────────────
+experiment:
+  name: "hcmt_baseline"
+  seed: 42
+  output_dir: "./outputs"
+  checkpoint_dir: "./checkpoints"
+  log_dir: "./logs"
+  use_wandb: false
+  wandb_project: "hcmt-breast-cancer"
+
+# ─── Data ─────────────────────────────────────────────────────────────────────
+data:
+  root_dir: "./data/tcga_brca"
+  wsi_features_dir: "wsi_features"      # Pre-extracted patch features (.pt files)
+  genomics_dir: "genomics"              # Normalized RNA-seq tensors (.pt files)
+  radiology_dir: "radiology"            # Pre-processed MRI volumes (.pt files)
+  clinical_csv: "clinical.csv"
+  
+  # Modality availability (set to false to run without that modality)
+  use_wsi: true
+  use_genomics: true
+  use_radiology: true
+  use_clinical: true
+  
+  # Splits
+  val_split: 0.15
+  test_split: 0.15
+  n_folds: 5                            # For cross-validation
+  
+  # WSI
+  max_patches: 4096                     # Max patches per slide (memory limit)
+  wsi_feat_dim: 1024                    # Feature dim from CONCH/UNI encoder
+  
+  # Genomics
+  n_genes: 60660                        # TCGA BRCA RNA-seq gene count
+  
+  # Radiology
+  radiology_size: [32, 128, 128]        # D x H x W after resampling
+  
+  # Clinical
+  n_clinical_features: 17              # After one-hot encoding
+  
+  # DataLoader
+  batch_size: 8
+  num_workers: 4
+  pin_memory: true
+
+# ─── Model ────────────────────────────────────────────────────────────────────
+model:
+  d_model: 256                          # Hidden dimension throughout
+  n_heads: 8                            # Attention heads
+  dropout: 0.1
+  n_classes: 5                          # PAM50 subtypes
+  
+  # Modality encoders
+  encoders:
+    wsi:
+      patch_feat_dim: 1024
+      n_proj_layers: 2
+    genomics:
+      n_tokens: 64
+      hidden_dim: 512
+    radiology:
+      cnn_channels: [32, 64, 128]
+      pool_size: [4, 4, 4]
+    clinical:
+      n_tokens: 16
+      hidden_dim: 128
+  
+  # Intra-modal transformer
+  intra_modal:
+    n_layers: 2
+    ff_dim: 512
+  
+  # Cross-modal attention
+  cross_modal:
+    n_layers: 2                         # Number of stacked HCMT blocks
+    ff_dim: 512
+  
+  # Classifier head
+  classifier:
+    hidden_dim: 128
+
+# ─── Training ─────────────────────────────────────────────────────────────────
+training:
+  epochs: 100
+  early_stopping_patience: 15
+  
+  # Optimizer
+  optimizer: "adamw"
+  lr: 3e-4
+  weight_decay: 1e-4
+  betas: [0.9, 0.999]
+  
+  # Scheduler
+  scheduler: "cosine_warmup"
+  warmup_epochs: 10
+  min_lr: 1e-6
+  
+  # Mixed precision
+  use_amp: true
+  
+  # Gradient clipping
+  clip_grad_norm: 1.0
+  
+  # Loss
+  label_smoothing: 0.1
+  use_class_weights: true               # Weight by inverse class frequency
+
+# ─── Evaluation ───────────────────────────────────────────────────────────────
+evaluation:
+  primary_metric: "macro_f1"            # Used for best model selection
+  metrics:
+    - "macro_f1"
+    - "balanced_accuracy"
+    - "per_class_auc"
+    - "cohens_kappa"
+    - "confusion_matrix"
+
+# ─── Ablation flags ───────────────────────────────────────────────────────────
+ablation:
+  disable_cross_modal_attn: false
+  disable_gated_fusion: false
+  single_modality: null                 # "wsi" | "genomics" | "radiology" | "clinical" | null
